@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#050b10">
+<title>Tomás Oviedo — Barbería Turnos</title>
+<style>
+:root{--blue:#2389ff;--green:#16c76b;--red:#ff3150;--card:#0b141c;--line:#25333f}
+*{box-sizing:border-box}body{margin:0;background:#050b10;color:#f5f5f5;font-family:Arial,Helvetica,sans-serif}
+button,input,select{font:inherit}button{border:0;cursor:pointer;font-weight:800}
+.app{max-width:1050px;margin:auto;padding:20px}
+header{position:relative;display:flex;align-items:center;justify-content:center;gap:14px;margin-bottom:22px;min-height:58px;text-align:center}
+.brand-wrap{width:100%;text-align:center}.brand{font-weight:900;font-size:clamp(20px,4vw,30px);color:var(--blue);letter-spacing:2px}.sub{font-size:12px;color:#9da8b1;letter-spacing:3px;margin-top:4px}
+.primary{background:var(--blue);color:#06111c;padding:12px 16px;border-radius:12px}.secondary{background:#17222b;color:#fff;padding:12px 16px;border-radius:10px}
+.admin-open{position:absolute;left:0;top:50%;transform:translateY(-50%);background:#101b25;color:#e7f0f8;border:1px solid #2c4152;padding:6px 8px;border-radius:8px;white-space:nowrap;font-size:10px;letter-spacing:.3px}
+.notice{padding:12px 14px;border-radius:12px;background:#101b25;border:1px solid #25333f;color:#b9c6d0;font-size:13px;margin-bottom:16px}
+.days{display:flex;overflow-x:auto;gap:0;background:#0b141c;border:1px solid var(--line);border-radius:14px;margin-bottom:20px}
+.daytab{min-width:100px;flex:0 0 auto;padding:13px 8px;background:transparent;color:#aeb8c0;font-size:13px}.daytab.active{color:var(--blue);box-shadow:inset 0 -3px var(--blue)}
+.card{background:linear-gradient(145deg,#0b141c,#071018);border:1px solid var(--line);border-radius:18px;padding:16px}
+h2{margin:0 0 12px;color:var(--blue);font-size:20px}
+.slot{display:grid;grid-template-columns:75px 1fr auto;gap:10px;align-items:center;border:1px solid #25333f;border-radius:13px;padding:10px;margin:9px 0;background:#09121a}
+.time{font-size:16px;font-weight:900;background:#111d27;padding:10px 5px;border-radius:10px;text-align:center}
+.status{font-size:11px;font-weight:900;padding:6px 9px;border-radius:20px;display:inline-block}.free{color:#fff;background:var(--green)}.busy{color:#fff;background:var(--red)}
+.service{font-size:12px;color:#9da8b1;margin-top:5px}.slot button{background:var(--blue);color:#06111c;padding:9px 12px;border-radius:9px}
+.tools-row{display:flex;gap:10px;justify-content:center;margin-bottom:18px}.copy-availability{width:100%;max-width:420px;padding:13px;border:1px solid #263746;border-radius:13px;background:#111b23;color:#fff;font-weight:700}
+footer{margin-top:25px;padding:18px;color:#aeb8c0;font-size:13px;display:flex;justify-content:center;align-items:center;gap:24px;flex-wrap:wrap}footer a{color:#aeb8c0;text-decoration:none;display:inline-flex;align-items:center;gap:8px;font-weight:700}.wa{color:#25D366}.ig{color:#E1306C}.social-logo{width:27px;height:27px;display:block;flex:none}
+.modal{position:fixed;inset:0;background:#000b;display:none;align-items:center;justify-content:center;padding:18px;z-index:10}.modal.show{display:flex}
+.box{width:min(460px,100%);max-height:90vh;overflow:auto;background:#0b141c;border:1px solid var(--line);border-radius:20px;padding:22px}
+.box h3{margin:0 0 12px;color:var(--blue)}label{display:block;font-size:12px;color:#aeb8c0;margin:12px 0 6px}
+input,select{width:100%;padding:12px;border-radius:10px;border:1px solid var(--line);background:#071018;color:#fff;font-size:16px}
+.formbuttons{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}.formbuttons button{flex:1}
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.admin-actions button{padding:10px;border-radius:9px;background:#17222b;color:#fff}.admin-list{font-size:13px;color:#d9e3ea}.admin-item{padding:10px 0;border-bottom:1px solid #25333f;display:flex;justify-content:space-between;gap:10px;align-items:center}.admin-item button{background:#401b25;color:#fff;padding:7px;border-radius:7px}
+.small{font-size:12px;color:#9da8b1;line-height:1.5}.error{color:#ff7185}.success{color:#69e5a0}
+@media(max-width:600px){.app{padding:13px}header{min-height:52px;padding-top:2px}.brand{letter-spacing:1px;font-size:20px}.sub{font-size:10px;letter-spacing:2px}.admin-open{font-size:8px;padding:5px 6px;max-width:78px;white-space:normal;line-height:1.15}.slot{grid-template-columns:66px 1fr auto;gap:8px;padding:8px}.slot button{padding:9px;font-size:12px}.daytab{min-width:92px}}
+
+.tools-row.admin-only{display:none}
+body.is-admin .tools-row.admin-only{display:flex}
+body.is-admin .admin-open{border-color:var(--green);color:var(--green)}
+.slot button.danger{background:#401b25;color:#fff}
+.tools-row .copy-availability.danger{border-color:#5a2230;background:#2a1118;color:#ff9aa9}
+.tools-row .copy-availability{max-width:none;flex:1}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);background:#16c76b;color:#04140b;padding:11px 18px;border-radius:12px;font-weight:800;font-size:14px;opacity:0;pointer-events:none;transition:.25s;z-index:20}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.days{display:grid;grid-template-columns:repeat(7,1fr);overflow:hidden}
+.daytab{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;padding:12px 2px;font-size:13px}
+.daytab .abbr{display:none}
+.daytab.today .dname::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--blue);margin-right:5px;vertical-align:middle}
+.dcount{font-size:11px;font-weight:900;min-width:24px;padding:3px 7px;border-radius:20px;background:#16c76b22;color:var(--green)}
+.dcount.zero{background:#ff315022;color:var(--red)}
+.dcount.none{background:#17222b;color:#7d8993}
+.tools-row{flex-wrap:wrap}.tools-row .copy-availability{flex:1 1 200px}
+.slot.past{opacity:.55}.status.gone{background:#2a3641;color:#aeb8c0}
+@media(max-width:600px){.daytab{min-width:0;font-size:11px;padding:11px 0}.daytab .full{display:none}.daytab .abbr{display:inline}.dcount{min-width:20px;padding:2px 5px;font-size:10px}}
+
+.days{position:sticky;top:0;z-index:5;box-shadow:0 8px 18px #050b10cc}
+.daytab.active{box-shadow:none;color:#aeb8c0}.daytab.today{color:#e7f0f8}
+.card.day{margin-bottom:16px;scroll-margin-top:84px}
+.day-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;flex-wrap:wrap}
+.day-head h2{margin:0;display:flex;align-items:center;gap:10px}
+.today-badge{font-size:10px;letter-spacing:1px;background:var(--blue);color:#06111c;padding:3px 8px;border-radius:20px}
+.day-right{display:flex;align-items:center;gap:8px}
+.day-count{font-size:12px;font-weight:900;padding:5px 10px;border-radius:20px}
+.day-count.ok{background:#16c76b22;color:var(--green)}.day-count.full-text{background:#ff315022;color:var(--red)}.day-count.closed-text{background:#17222b;color:#9da8b1}
+.mini{background:#17222b;color:#fff;padding:6px 10px;border-radius:8px;font-size:12px}
+.closed{margin:10px 0 4px;padding:22px;border:1px dashed #2c4152;border-radius:13px;text-align:center;font-weight:900;letter-spacing:4px;color:#7d8993;background:#09121a}
+@media(max-width:600px){.card.day{scroll-margin-top:76px}}
+
+body{background:radial-gradient(900px 420px at 50% -120px,#0e2a47 0,transparent 70%),#050b10;background-attachment:fixed}
+.notice{border-left:3px solid var(--blue);line-height:1.45}
+.notice.error{border-left-color:var(--red)}.notice.success{border-left-color:var(--green)}
+.legend{display:flex;gap:18px;justify-content:center;font-size:12px;color:#aeb8c0;margin-bottom:12px}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:middle}
+.daybar{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-bottom:14px}
+.pill{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0;border-radius:12px;background:#101b25;color:#aeb8c0;font-size:12px;border:1px solid #25333f}
+.pill .full{display:none}
+.pill.today:not(.on){color:var(--blue);border-color:#2389ff88}
+.pill.on{background:var(--blue);color:#06111c;border-color:var(--blue)}
+.pill.today::after{content:"";position:absolute;top:5px;right:6px;width:5px;height:5px;border-radius:50%;background:var(--blue)}
+.pill.on.today::after{background:#06111c}
+.pill .num{font-size:17px;font-weight:900;color:#fff;line-height:1}
+.pill.on .num{color:#06111c}
+.card.dayview{padding:16px}
+.slot-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:10px}
+.chip{height:68px;width:100%;border-radius:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0 6px;border:1px solid transparent;text-align:center;font-family:inherit}
+.chip .t{font-size:20px;font-weight:900;color:#fff;line-height:1.1}
+.chip .s{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;display:flex;align-items:center;gap:5px}
+.chip .s::before{content:"";width:7px;height:7px;border-radius:50%;background:currentColor}
+.chip .who{font-size:10px;font-weight:700;color:#ffb3be;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip.free{background:#16c76b1f;border-color:#16c76b99}.chip.free .s{color:var(--green)}
+.chip.busy{background:#ff31501a;border-color:#ff315066}.chip.busy .t{color:#ffb3be;text-decoration:line-through;text-decoration-thickness:1.5px}.chip.busy .s{color:#ff6b83}
+.chip.gone{background:#121b23;border-color:#1d2a35}.chip.gone .t,.chip.gone .s{color:#6f7c87}
+button.chip{cursor:pointer;transition:transform .08s}button.chip:active{transform:scale(.97)}
+.closed{grid-column:1/-1;margin:4px 0;padding:46px 20px;border:1px dashed #2c4152;border-radius:14px;text-align:center;font-weight:900;letter-spacing:6px;color:#7d8993;background:#09121a}
+@media(max-width:700px){
+  .tools-row{flex-direction:column;gap:8px;margin-bottom:14px}
+  .tools-row .copy-availability{flex:0 0 auto;max-width:none;padding:12px}
+}
+@media(min-width:701px){
+  .pill{font-size:14px;padding:11px 0}.pill .num{font-size:20px}.pill .abbr{display:none}.pill .full{display:inline}
+  .slot-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <button class="admin-open" id="adminOpen">ADMINISTRADOR</button>
+  <div class="brand-wrap"><div class="brand">TOMÁS OVIEDO</div><div class="sub">BARBERÍA · TURNOS</div></div>
+</header>
+<div id="globalNotice" class="notice">Elegí un día y tocá un horario disponible.</div>
+<div class="tools-row admin-only"><button class="copy-availability" id="copyWeek">Copiar disponibilidad de la semana</button><button class="copy-availability danger" id="deleteWeek">Eliminar semana</button></div>
+<div class="legend"><span><i style="background:var(--green)"></i>Disponible</span><span><i style="background:var(--red)"></i>Ocupado</span></div>
+<div class="daybar" id="daybar"></div>
+<div class="card dayview"><div class="day-head"><h2 id="dayTitle"></h2><button class="mini" id="copyDay" hidden>Copiar disponibilidad</button></div><div id="schedule" class="slot-grid"></div></div>
+<footer>
+<a class="wa" href="https://wa.me/542216713957" target="_blank" rel="noopener" aria-label="WhatsApp 221 671-3957">
+<svg class="social-logo" viewBox="0 0 32 32" aria-hidden="true"><path fill="currentColor" d="M16 2.5A13.2 13.2 0 0 0 4.6 22.3L3 29l6.9-1.8A13.2 13.2 0 1 0 16 2.5Zm0 23.9c-2 0-4-.5-5.7-1.6l-.4-.2-4.1 1.1 1.1-4-.3-.4A10.7 10.7 0 1 1 16 26.4Zm5.9-8c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1a8.8 8.8 0 0 1-2.6-1.6 9.7 9.7 0 0 1-1.8-2.2c-.2-.3 0-.5.1-.7l.5-.6.3-.5c.1-.2 0-.4 0-.6s-.7-1.7-1-2.3c-.2-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4s-1.2 1.2-1.2 2.8 1.2 3.2 1.4 3.4 2.4 3.7 5.8 5.1c.8.4 1.5.6 2 .7.9.3 1.7.2 2.3.1.7-.1 1.9-.8 2.2-1.5s.3-1.4.2-1.5-.3-.2-.6-.4Z"/></svg>
+<span>WhatsApp · 221 671-3957</span></a>
+<a class="ig" href="https://instagram.com/tomasoviedo_22" target="_blank" rel="noopener" aria-label="Instagram @tomasoviedo_22">
+<svg class="social-logo" viewBox="0 0 32 32" aria-hidden="true"><defs><linearGradient id="igGradient" x1="0" y1="1" x2="1" y2="0"><stop offset="0" stop-color="#ffb13b"/><stop offset=".45" stop-color="#f02d78"/><stop offset="1" stop-color="#8b38e8"/></linearGradient></defs><rect x="3" y="3" width="26" height="26" rx="8" fill="url(#igGradient)"/><rect x="8" y="8" width="16" height="16" rx="5" fill="none" stroke="white" stroke-width="2.2"/><circle cx="16" cy="16" r="4" fill="none" stroke="white" stroke-width="2.2"/><circle cx="22" cy="10" r="1.5" fill="white"/></svg>
+<span>Instagram · @tomasoviedo_22</span></a>
+</footer>
+</div>
+
+<div class="modal" id="bookingModal">
+<div class="box">
+<h3>Agendar turno</h3>
+<p id="bookingSummary" class="small"></p>
+<label for="clientName">Nombre del cliente</label><input id="clientName" maxlength="70" placeholder="Ej.: Juan Pérez" autocomplete="off">
+<label for="clientService">Servicio (opcional)</label><input id="clientService" maxlength="80" placeholder="Ej.: Corte" autocomplete="off">
+<p id="bookingError" class="small error"></p>
+<div class="formbuttons"><button class="primary" id="confirmBooking">Agendar</button><button class="secondary" id="cancelBooking">Cancelar</button></div>
+</div></div>
+
+<div class="modal" id="adminModal">
+<div class="box">
+<h3>Administrador</h3>
+<div id="adminLogin">
+<p class="small">Ingresá con la cuenta de administrador configurada en Firebase.</p>
+<label for="adminEmail">Correo del administrador</label><input id="adminEmail" type="email" autocomplete="username" placeholder="Tu correo">
+<label for="adminPassword">Contraseña</label><input id="adminPassword" type="password" autocomplete="current-password" placeholder="Contraseña">
+<p id="adminError" class="small error"></p>
+<div class="formbuttons"><button class="primary" id="adminLoginBtn">Ingresar</button><button class="secondary" id="adminClose">Cerrar</button></div>
+</div>
+<div id="adminPanel" hidden>
+<p class="small success" id="adminSignedIn"></p>
+<div class="admin-actions"><button id="deleteWeekPanel">Eliminar semana</button><button id="adminLogout">Cerrar sesión</button><button id="adminPanelClose">Cerrar</button></div>
+<div id="adminBookings" class="admin-list"></div>
+<p class="small">Para agendar, tocá un horario verde. Los clientes solo ven disponible u ocupado.</p>
+</div>
+</div></div>
+
+<div id="toast"></div>
+
+<script type="module">
+/* Firebase se carga al final: si falla, los horarios igual se muestran. */
+const FB_URL = "https://www.gstatic.com/firebasejs/12.4.0/";
+let initializeApp, getAuth, signInAnonymously, signInWithEmailAndPassword, onAuthStateChanged, signOut;
+let getFirestore, collection, doc, getDoc, getDocs, onSnapshot, runTransaction, deleteDoc, writeBatch, Timestamp;
+let app, db, auth, loaded = false;
+
+/* REEMPLAZÁ estos valores por la configuración de tu app web de Firebase. */
+const firebaseConfig = {
+  apiKey: "AIzaSyCOsShOSRLDN8ycKFtgO5tK5Et0WFanVvU",
+  authDomain: "toto-barber.firebaseapp.com",
+  projectId: "toto-barber",
+  storageBucket: "toto-barber.firebasestorage.app",
+  messagingSenderId: "131194935222",
+  appId: "1:131194935222:web:ec82fa84f43b83779ad317"
+};
+
+const WA_NUMBER = "542216713957";
+const DEFAULT_NOTICE = "Elegí un día y tocá un horario disponible: se abre WhatsApp con el mensaje listo para enviarme.";
+const ADMIN_NOTICE = "Modo administrador: tocá un horario verde para agendar y uno rojo para ver o eliminar el turno. Con “Copiar disponibilidad” copiás los horarios libres del día.";
+
+const days = ["Lunes","Martes","Miércoles","Jueves","Viernes","Sábado","Domingo"];
+const schedule = {
+  "Lunes":["18:00","19:00","20:00","21:00"],
+  "Martes":["14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],
+  "Miércoles":["15:00","16:00","17:00","18:00","19:00","20:00","21:00"],
+  "Jueves":["14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],
+  "Viernes":["14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],
+  "Sábado":["14:00","15:00","16:00","17:00","18:00","19:00","20:00","21:00"],
+  "Domingo":[] /* sin horarios: agregalos acá, por ejemplo ["10:00","11:00"] */
+};
+const $ = id => document.getElementById(id);
+const AR_OFFSET = 3*3600e3; /* Argentina: UTC-3, sin horario de verano */
+function arParts(ms){const a=new Date(ms-AR_OFFSET);return {y:a.getUTCFullYear(),m:a.getUTCMonth(),d:a.getUTCDate(),dow:a.getUTCDay()};}
+const dayNames = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+let todayName = dayNames[arParts(Date.now()).dow];
+let selectedDay = (schedule[todayName]||[]).length ? todayName : "Lunes";
+let selectedSlot = null, isAdmin = false, listening = false;
+let bookings = new Map(), allBookings = new Map();
+
+/* Los turnos se borran solos el domingo a las 24:00 (lunes 00:00) hora de Argentina (UTC-3, sin horario de verano).
+   Un turno cargado el domingo cuenta para la semana siguiente. */
+function weekEndMs(ms){
+  const ar=new Date(ms-AR_OFFSET), dow=ar.getUTCDay(), add=dow===0?7:7-dow;
+  return Date.UTC(ar.getUTCFullYear(),ar.getUTCMonth(),ar.getUTCDate()+add+1)+AR_OFFSET;
+}
+function expiresAt(b){return b.expireAt&&b.expireAt.toMillis?b.expireAt.toMillis():weekEndMs(b.createdAt||0);}
+function isExpired(b){return expiresAt(b)<=Date.now();}
+function rebuildBookings(){bookings=new Map([...allBookings].filter(([,b])=>!isExpired(b)));}
+
+function dateKey(day,time){ return day+"_"+time.replace(":",""); }
+function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+function showModal(id){$(id).classList.add("show");}
+function hideModal(id){$(id).classList.remove("show");}
+function setNotice(message, type=""){ $("globalNotice").textContent=message; $("globalNotice").className="notice "+type; }
+function configReady(){return firebaseConfig.apiKey!=="PEGAR_API_KEY" && firebaseConfig.projectId!=="PEGAR_PROJECT_ID" && firebaseConfig.appId!=="PEGAR_APP_ID";}
+let toastTimer;
+function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove("show"),2200);}
+
+/* ---------- Pantalla principal ---------- */
+function isPast(day,time){
+  if(day!==todayName)return false;
+  const [hh,mm]=time.split(":").map(Number), n=new Date(Date.now()-AR_OFFSET);
+  return hh*60+mm < n.getUTCHours()*60+n.getUTCMinutes();
+}
+function freeTimes(day,forClient){
+  return (schedule[day]||[]).filter(t=>!bookings.has(dateKey(day,t)) && !(forClient&&isPast(day,t)));
+}
+function bookingInfo(b){return esc(b.clientName||"Cliente")+(b.service?" — "+esc(b.service):"");}
+/* Fechas de la semana actual (lunes a domingo). Cambian solas el lunes a las 00:00. */
+function weekDateNums(){
+  const {y,m,d,dow}=arParts(Date.now()), back=(dow+6)%7;
+  return days.map((_,i)=>new Date(Date.UTC(y,m,d-back+i)).getUTCDate());
+}
+function dayLabel(day){return day+" "+weekDateNums()[days.indexOf(day)];}
+function chip(cls,t,label,{tag="div",attrs="",extra=""}={}){
+  return `<${tag} class="chip ${cls}" ${attrs}><span class="t">${t}</span><span class="s">${label}</span>${extra}</${tag}>`;
+}
+function renderTabs(){
+  const nums=weekDateNums();
+  $("daybar").innerHTML=days.map((d,i)=>`<button class="pill ${d===selectedDay?"on":""} ${d===todayName?"today":""}" data-day="${d}"><span class="abbr">${d.slice(0,3).toUpperCase()}</span><span class="full">${d}</span><span class="num">${nums[i]}</span></button>`).join("");
+}
+function renderSlots(){
+  renderTabs();
+  const day=selectedDay, times=schedule[day]||[];
+  $("dayTitle").innerHTML=esc(dayLabel(day))+(day===todayName?'<span class="today-badge">HOY</span>':"");
+  $("copyDay").hidden=!(isAdmin&&times.length);
+  if(!times.length){$("schedule").innerHTML='<div class="closed">CERRADO</div>';return;}
+  $("schedule").innerHTML=times.map(t=>{
+    const id=dateKey(day,t), b=bookings.get(id);
+    if(b){
+      return isAdmin
+        ?chip("busy",t,"Ocupado",{tag:"button",attrs:`data-busy="${esc(id)}"`,extra:`<span class="who">${esc(b.clientName||"Cliente")}</span>`})
+        :chip("busy",t,"Ocupado");
+    }
+    if(!isAdmin && isPast(day,t)) return chip("gone",t,"Ya pasó");
+    return chip("free",t,"Disponible",{tag:"button",attrs:`data-day="${esc(day)}" data-time="${t}"`});
+  }).join("");
+}
+
+/* ---------- Cliente: pedir turno por WhatsApp ---------- */
+function requestSlot(day,time){
+  const message=`Hola buenas! Quiero el turno de las ${time} el día ${day}.`;
+  window.location.href="https://wa.me/"+WA_NUMBER+"?text="+encodeURIComponent(message);
+}
+
+/* ---------- Administrador: agendar ---------- */
+function openBooking(day,time){
+  if(!isAdmin)return;
+  selectedSlot={day,time,id:dateKey(day,time)};
+  $("bookingSummary").textContent=`${day} a las ${time}.`;
+  $("clientName").value="";$("clientService").value="";$("bookingError").textContent="";
+  showModal("bookingModal");
+  setTimeout(()=>$("clientName").focus(),50);
+}
+async function confirmBooking(){
+  if(!isAdmin||!selectedSlot)return;
+  const name=$("clientName").value.trim()||"Cliente", service=$("clientService").value.trim();
+  $("confirmBooking").disabled=true;
+  try{
+    const ref=doc(db,"bookings",selectedSlot.id);
+    await runTransaction(db,async tx=>{
+      const existing=await tx.get(ref);
+      if(existing.exists()&&!isExpired(existing.data())) throw new Error("TAKEN");
+      tx.set(ref,{day:selectedSlot.day,time:selectedSlot.time,clientName:name,service:service,createdAt:Date.now(),expireAt:Timestamp.fromDate(new Date(weekEndMs(Date.now())))});
+    });
+    hideModal("bookingModal");
+    toast("Turno agendado");
+  }catch(e){
+    console.error(e);
+    $("bookingError").textContent=e.message==="TAKEN"?"Ese horario ya está ocupado.":"No se pudo guardar. Revisá la conexión y los permisos.";
+  }finally{$("confirmBooking").disabled=false;}
+}
+
+/* ---------- Administrador: eliminar ---------- */
+async function deleteBooking(id,skipConfirm){
+  if(!isAdmin)return;
+  if(!skipConfirm&&!confirm("¿Eliminar este turno y liberar el horario?"))return;
+  try{await deleteDoc(doc(db,"bookings",id));toast("Turno eliminado");}
+  catch(e){console.error(e);alert("No se pudo eliminar. Revisá los permisos de administrador.");}
+}
+async function deleteWeek(){
+  if(!isAdmin){alert("Solo el administrador puede eliminar la semana.");return;}
+  if(!confirm("¿Eliminar TODOS los turnos de la semana? Esta acción no se puede deshacer."))return;
+  try{
+    const snap=await getDocs(collection(db,"bookings"));
+    // Firestore admite hasta 500 operaciones por lote.
+    for(let i=0;i<snap.docs.length;i+=450){
+      const batch=writeBatch(db);snap.docs.slice(i,i+450).forEach(d=>batch.delete(d.ref));await batch.commit();
+    }
+    toast("Semana eliminada");
+  }catch(e){console.error(e);alert("No se pudo eliminar la semana. Revisá los permisos y la conexión.");}
+}
+
+function busyTap(id){
+  const b=bookings.get(id);if(!b)return;
+  if(confirm(`${b.day} · ${b.time}\n${b.clientName||"Cliente"}${b.service?" — "+b.service:""}\n\n¿Eliminar este turno y liberar el horario?`))deleteBooking(id,true);
+}
+
+/* ---------- Administrador: copiar disponibilidad ---------- */
+async function copyText(msg){
+  try{await navigator.clipboard.writeText(msg);toast("Copiado");}
+  catch{prompt("Copiá el texto:",msg);}
+}
+function copyDay(selectedDay){
+  const free=freeTimes(selectedDay,true);
+  copyText(free.length
+    ?`Estos son los turnos que quedan disponibles para el día ${dayLabel(selectedDay)}:\n\n${free.map(t=>"• "+t).join("\n")}\n\nDecime cuál te queda mejor y te lo agendo.`
+    :`Estos son los turnos que quedan disponibles para el día ${dayLabel(selectedDay)}:\n\nNo quedan turnos disponibles.`);
+}
+function copyWeek(){
+  const blocks=days.filter(d=>(schedule[d]||[]).length).map(d=>{
+    const free=freeTimes(d,true);
+    return `*${dayLabel(d)}*\n`+(free.length?free.map(t=>"• "+t).join("\n"):"Completo");
+  });
+  copyText(`Estos son los turnos disponibles de la semana:\n\n${blocks.join("\n\n")}\n\nDecime cuál te queda mejor y te lo agendo.`);
+}
+
+/* ---------- Panel de administrador ---------- */
+function renderAdminBookings(){
+  if(!isAdmin)return;
+  const items=[...bookings.entries()].map(([id,b])=>({id,...b})).sort((a,b)=>(days.indexOf(a.day)-days.indexOf(b.day))||a.time.localeCompare(b.time));
+  $("adminBookings").innerHTML=items.length
+    ?items.map(b=>`<div class="admin-item"><div><strong>${esc(b.day)} · ${esc(b.time)}</strong><div>${bookingInfo(b)}</div></div><button data-delete="${esc(b.id)}">Eliminar</button></div>`).join("")
+    :"No hay turnos agendados.";
+}
+function setAdmin(value,user){
+  isAdmin=value;
+  document.body.classList.toggle("is-admin",value);
+  $("adminLogin").hidden=value;$("adminPanel").hidden=!value;
+  if(value){
+    $("adminSignedIn").textContent="Sesión iniciada: "+(user&&user.email?user.email:"Administrador");
+    hideModal("adminModal");
+  }
+  setNotice(value?ADMIN_NOTICE:DEFAULT_NOTICE,value?"success":"");
+  renderSlots();renderAdminBookings();
+}
+async function loginAdmin(){
+  $("adminError").textContent="";
+  if(!auth){$("adminError").textContent="Firebase todavía no está conectado. Revisá la configuración.";return;}
+  try{
+    await signInWithEmailAndPassword(auth,$("adminEmail").value.trim(),$("adminPassword").value);
+    $("adminPassword").value="";
+  }catch(e){console.error(e);$("adminError").textContent="No se pudo iniciar sesión. Revisá correo y contraseña de Firebase.";}
+}
+
+/* ---------- Conexión con Firebase ---------- */
+function errCode(e){return (e&&(e.code||e.message))||"error";}
+function startListening(){
+  if(listening||!configReady())return;
+  listening=true;
+  onSnapshot(collection(db,"bookings"),snap=>{
+    loaded=true;
+    allBookings=new Map(snap.docs.map(d=>[d.id,d.data()]));rebuildBookings();
+    if($("globalNotice").classList.contains("error"))setNotice(isAdmin?ADMIN_NOTICE:DEFAULT_NOTICE,isAdmin?"success":"");
+    renderSlots();renderAdminBookings();
+  },err=>{console.error(err);listening=false;setNotice("No se pudieron cargar los turnos ocupados ("+errCode(err)+"). Revisá las reglas de Firestore.","error");});
+}
+function startFirebase(){
+  startListening();
+  onAuthStateChanged(auth,async user=>{
+    if(!user){
+      try{await signInAnonymously(auth);}
+      catch(e){console.error(e);if(!loaded)setNotice("No se pudo conectar con Firebase ("+errCode(e)+"). Revisá la configuración y Authentication.","error");}
+      return;
+    }
+    startListening();
+    if(user.isAnonymous){if(isAdmin)setAdmin(false);return;}
+    try{
+      // El permiso real lo validan las reglas de Firestore mediante admins/{uid}.
+      const adminDoc=await getDoc(doc(db,"admins",user.uid));
+      if(adminDoc.exists()){setAdmin(true,user);}
+      else{$("adminError").textContent="Esta cuenta no tiene permisos de administrador.";await signOut(auth);}
+    }catch(e){
+      console.error(e);
+      $("adminError").textContent="No se pudo verificar el administrador ("+errCode(e)+"). Revisá las reglas de Firestore.";
+      await signOut(auth);
+    }
+  });
+}
+async function connectFirebase(){
+  if(!configReady()){setNotice("Falta configurar Firebase: los turnos ocupados todavía no se pueden mostrar.","error");return;}
+  try{
+    const [A,Au,F]=await Promise.all([import(FB_URL+"firebase-app.js"),import(FB_URL+"firebase-auth.js"),import(FB_URL+"firebase-firestore.js")]);
+    ({initializeApp}=A);
+    ({getAuth,signInAnonymously,signInWithEmailAndPassword,onAuthStateChanged,signOut}=Au);
+    ({getFirestore,collection,doc,getDoc,getDocs,onSnapshot,runTransaction,deleteDoc,writeBatch,Timestamp}=F);
+    app=initializeApp(firebaseConfig);db=getFirestore(app);auth=getAuth(app);
+    startFirebase();
+  }catch(e){console.error(e);setNotice("No se pudo cargar Firebase ("+errCode(e)+"). Los turnos ocupados pueden no verse.","error");}
+}
+
+/* ---------- Eventos ---------- */
+$("daybar").addEventListener("click",e=>{
+  const btn=e.target.closest("[data-day]");if(!btn)return;
+  selectedDay=btn.dataset.day;renderSlots();
+});
+$("copyDay").addEventListener("click",()=>copyDay(selectedDay));
+$("schedule").addEventListener("click",e=>{
+  const el=e.target.closest("[data-copyday],[data-busy],[data-time]");if(!el)return;
+  if(el.dataset.copyday)return copyDay(el.dataset.copyday);
+  if(el.dataset.busy)return busyTap(el.dataset.busy);
+  if(el.dataset.time)return isAdmin?openBooking(el.dataset.day,el.dataset.time):requestSlot(el.dataset.day,el.dataset.time);
+});
+$("adminBookings").addEventListener("click",e=>{
+  const btn=e.target.closest("button[data-delete]");if(btn)deleteBooking(btn.dataset.delete);
+});
+$("adminOpen").addEventListener("click",()=>showModal("adminModal"));
+$("adminClose").addEventListener("click",()=>hideModal("adminModal"));
+$("adminPanelClose").addEventListener("click",()=>hideModal("adminModal"));
+$("cancelBooking").addEventListener("click",()=>hideModal("bookingModal"));
+$("confirmBooking").addEventListener("click",confirmBooking);
+$("adminLoginBtn").addEventListener("click",loginAdmin);
+$("adminPassword").addEventListener("keydown",e=>{if(e.key==="Enter")loginAdmin();});
+$("adminLogout").addEventListener("click",async()=>{if(auth)await signOut(auth);});
+$("copyWeek").addEventListener("click",copyWeek);
+$("deleteWeek").addEventListener("click",deleteWeek);
+$("deleteWeekPanel").addEventListener("click",deleteWeek);
+
+setNotice(DEFAULT_NOTICE);
+renderSlots();
+/* Actualiza solo el día "HOY" y los horarios que ya pasaron (cada minuto y al volver a la página) */
+function refreshClock(){todayName=dayNames[arParts(Date.now()).dow];rebuildBookings();renderSlots();renderAdminBookings();}
+setInterval(refreshClock,60000);
+document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshClock();});
+connectFirebase();
+</script>
+</body>
+</html>

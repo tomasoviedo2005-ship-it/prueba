@@ -1,0 +1,22 @@
+BARBERÍA TURNOS — ARCHIVOS PARA GITHUB PAGES
+
+ARCHIVOS
+- index.html: página web configurada con Firebase para el proyecto turnos-barberia-e4ec1.
+- firestore.rules: reglas de ejemplo para pegar en Firebase Console. Este archivo NO se publica en GitHub para que las reglas funcionen; hay que copiarlas en Firebase.
+
+CÓMO SUBIR LA PÁGINA A GITHUB
+1. Descargá y descomprimí esta carpeta.
+2. Entrá al repositorio de GitHub donde está tu página.
+3. Subí el archivo index.html a la raíz del repositorio.
+4. Si GitHub pregunta si querés reemplazar el archivo existente, confirmá.
+5. En Settings > Pages, verificá que publique desde la rama main y la carpeta /(root).
+
+CONFIGURAR FIREBASE
+1. En Firebase Console, abrí el proyecto turnos-barberia-e4ec1.
+2. En Authentication > Sign-in method, habilitá los métodos que usa la página (anónimo y correo/contraseña, si aparecen en el código).
+3. En Firestore Database > Rules, pegá el contenido de firestore.rules y tocá Publicar.
+4. Para habilitar el administrador, creá en la colección admins un documento cuyo ID sea el UID del usuario administrador y un campo role de tipo texto con valor admin.
+
+IMPORTANTE
+Las reglas incluidas permiten leer bookings a cualquier visitante, pero solo un usuario cuyo UID tenga documento en admins puede crear, actualizar o borrar reservas. Si los clientes deben crear reservas desde la web, estas reglas impedirán esa acción y habrá que ajustar las reglas de forma segura.
+La configuración web de Firebase no reemplaza la configuración de Authentication, Firestore ni los permisos.
